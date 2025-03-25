@@ -1,0 +1,69 @@
+README
+Server code done by Kyungseok Ryoo
+Client code done by Shivank Vishvanathan
+
+Overview
+The project is a TCP Simple Broadcast Chat Protocol between Server and Client
+1. The protocol consists of one server, which can accept connections from multiple clients
+2. Clients must send a JOIN message to the server and the server must send an ACK to the client on successful and NAK if connection is rejected
+along with the reason.
+3. Clients must read the message from their standard input and send the message to the server. The server must forward the message received from a
+particular client and broadcast it to the other clients.
+4. The server must send an ONLINE message when a new client joins and a OFFLINE message when a client disconnected to all other clients joined.
+
+Architecture
+-Server implementation
+Implemented using C.
+The server handles multiple clients using TCP sockets and the select() 
+function to monitor activity.
+Clients create a message structure (SBCP) and send it to the server.
+Different SBCP message types use various attributes depending on the 
+message type (e.g., JOIN, SEND, ACK, NAK).
+The server supports both IPv4 and IPv6 client connections.
+A 10-second timeout is set for idle clients, after which an IDLE message is broadcast.
+The writen() function sends messages to clients and processes incoming messages 
+from them based on their type.
+
+-Client Implementation
+Implemented by Shivank Vishvanathan    
+Implemented using C.
+Client creates a message structure and sends it to the server.
+Messages make use of different structure attributes depending on their type
+client must be able to connect using ipv4 as well as ipv6 addresses.
+a timeout value of 10s is set to send a message if client is idle for more than 10s.
+writen() function sends messages to server and receives messages from the server and
+handles them depending on the message type.
+    
+-Client-Server interaction
+Client creates a socket and then connects to the server using ipv4 or ipv6 address.
+Client sends a JOIN message to the server on successful connection and server authenticates
+the client by sending back an ACK or NAK message based on successful or unsuccessful connection.
+Clients send message to server from standard input and receive forwarded messages from the server.
+Different message types are processed differently by the clients, based on the message number.
+When a particular client joins, server will send an online message for that client to other clients.
+When a particular client disconnects, server will send an offline message for that client to other clients.
+IO Multiplexing is used to check for multiple inputs at the client as well as server to ensure a process does not get
+blocked.
+The client sends an idle message to the server if there is inactivity for 10s or more. The server will send this message
+to the other connected clients every 10s.
+
+Error Handling:
+We have tried to implement as many error handlers as possible
+-The error_sys function is used to print error messages depending on the error and exit with -1
+-The EINTR error is checked.
+-Socket creation failure, connection failure and wrong command line inputs are also checked
+-NAK is sent by server if client tries joining with same name or max clients are reached
+
+Usage
+Compilation instructions:
+1) make all //builds the executables required to compile both the server and client
+2) make clean //cleans all the executable and binaries from the respective directory
+3) make echos //initializes the server on port 8080, IP 127.0.0.1 and max clients 3 by default
+4) make echos SERVER_ADDR=[IP_ADDR] PORT=[int port_number] NO_OF_CLIENTS=[max_no] //If server has to be initialized on ip, port number and max clients specified by user
+5) make echo //initializes client on port 8080 and IP address 127.0.0.1 by default
+6) make echo USERNAME=[username] SERVER_ADDR=[IP_ADDR] PORT=[int port_number] //If client has to be initialized on username, IP address and port input by the user.
+
+Requirements 
+- Linux Environment
+- GCC Compiler
+- Ensure all files are in the same directory to avoid complications/errors
